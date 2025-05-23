@@ -1,4 +1,6 @@
+// FinalStep.tsx
 "use client";
+
 import { useTranslations } from "next-intl";
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
@@ -11,7 +13,6 @@ import {
   FaFileAlt,
 } from "react-icons/fa";
 import { BiInfoCircle } from "react-icons/bi";
-import Link from "next/link";
 import { usePlans } from "@/hooks/usePlans";
 import SelectionButton from "./SelectionButton";
 
@@ -25,11 +26,6 @@ const formVariants = {
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
-};
-
-const modalVariants = {
-  hidden: { opacity: 0, scale: 0.8 },
-  visible: { opacity: 1, scale: 1, transition: { duration: 0.3 } },
 };
 
 const FinalStep = ({
@@ -46,14 +42,15 @@ const FinalStep = ({
   const t = useTranslations("FinalStep");
   const { plans } = usePlans();
   const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
-  const [uploadedFile, setUploadedFile] = useState(null);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const tTerms = useTranslations("Terms");
 
-  // Reset selectedPlan on success
+  // Reset selectedPlan and companyLicense on success
   useEffect(() => {
     if (isSuccess) {
       setValue("selectedPlan", "");
+      setValue("companyLicense", null);
       setUploadedFile(null);
     }
   }, [isSuccess, setValue]);
@@ -63,8 +60,7 @@ const FinalStep = ({
     setIsTermsModalOpen(false);
   };
 
-  const handleFileUpload = (file) => {
-    // Validate file type (PDF, JPG, PNG, etc.)
+  const handleFileUpload = (file: File) => {
     const allowedTypes = [
       "application/pdf",
       "image/jpeg",
@@ -87,7 +83,7 @@ const FinalStep = ({
     setValue("companyLicense", file, { shouldValidate: true });
   };
 
-  const handleDrop = (e) => {
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragOver(false);
     const file = e.dataTransfer.files[0];
@@ -96,18 +92,18 @@ const FinalStep = ({
     }
   };
 
-  const handleDragOver = (e) => {
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragOver(true);
   };
 
-  const handleDragLeave = (e) => {
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragOver(false);
   };
 
-  const handleFileInputChange = (e) => {
-    const file = e.target.files[0];
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (file) {
       handleFileUpload(file);
     }
@@ -118,7 +114,7 @@ const FinalStep = ({
     setValue("companyLicense", null);
   };
 
-  const formatFileSize = (bytes) => {
+  const formatFileSize = (bytes: number) => {
     if (bytes === 0) return "0 Bytes";
     const k = 1024;
     const sizes = ["Bytes", "KB", "MB", "GB"];
@@ -138,14 +134,13 @@ const FinalStep = ({
       {/* Terms and Conditions Modal */}
       {isTermsModalOpen && (
         <motion.div
-          initial="hidden"
-          animate="visible"
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
           className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
         >
           <div className="bg-white rounded-lg p-6 max-w-7xl w-full mx-4 max-h-[95vh] overflow-y-auto">
             <h2 className="text-xl font-semibold text-interactive_color mb-4 text-center">
-              {t("termsLink")}{" "}
-              {/* This remains as is, assuming it translates to "Terms and Conditions" */}
+              {t("termsLink")}
             </h2>
             <div className="text-gray-600 mb-6">
               <p className="mb-4 text-xs">{tTerms("paragraph_1")}</p>
@@ -212,17 +207,16 @@ const FinalStep = ({
             {t("companyInfoLabel")}
           </label>
           <textarea
-            {...register("additionalInfo")}
+            {...register("message")}
             placeholder={t("additionalInfoPlaceholder")}
             rows={6}
-            name="additionalInfo"
             className="w-full p-3 border rounded-lg border-gray-300 focus:outline-none focus:ring-2 focus:ring-interactive_color focus:border-transparent transition duration-200"
           />
         </div>
 
         {/* Company License Upload Section */}
         <div className="form-group mb-8">
-          <label className="block text-sm font-medium text-gray-700 mb-3 flex items-center">
+          <label className="text-sm font-medium text-gray-700 mb-3 flex items-center">
             📄 {t("companyLicenseLabel") || "Company License"}
             <span className="text-gray-500 ml-2 text-xs">
               ({t("optional") || "Optional"})
@@ -294,37 +288,39 @@ const FinalStep = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div>
               <p>
-                <span className="text-gray-500">{t("company")}:</span>
+                <span className="text-gray-500">{t("company")}:</span>{" "}
                 {formValues.companyName || "—"}
               </p>
               <p>
-                <span className="text-gray-500">{t("size")}:</span>
+                <span className="text-gray-500">{t("size")}:</span>{" "}
                 {formValues.numberOfEmployees || "—"}
               </p>
               <p>
-                <span className="text-gray-500">{t("contactPerson")}:</span>
+                <span className="text-gray-500">{t("contactPerson")}:</span>{" "}
                 {formValues.contactPerson || "—"}
               </p>
               <p>
-                <span className="text-gray-500">{t("email")}:</span>
+                <span className="text-gray-500">{t("email")}:</span>{" "}
                 {formValues.contactEmail || "—"}
               </p>
             </div>
             <div>
               <p>
-                <span className="text-gray-500">{t("website")}:</span>
+                <span className="text-gray-500">{t("website")}:</span>{" "}
                 {formValues.companyWebsite || "—"}
               </p>
               <p>
-                <span className="text-gray-500">{t("phone")}:</span>
-                {formValues.phone ? `+971 ${formValues.phone}` : "—"}
+                <span className="text-gray-500">{t("phone")}:</span>{" "}
+                {formValues.phoneNumber
+                  ? `+971 ${formValues.phoneNumber}`
+                  : "—"}
               </p>
               <p>
-                <span className="text-gray-500">{t("cities")}:</span>
+                <span className="text-gray-500">{t("cities")}:</span>{" "}
                 {selectedCities.join(", ") || "—"}
               </p>
               <p>
-                <span className="text-gray-500">{t("services")}:</span>
+                <span className="text-gray-500">{t("services")}:</span>{" "}
                 {selectedServices.length > 2
                   ? `${selectedServices.slice(0, 2).join(", ")} + ${
                       selectedServices.length - 2
@@ -332,13 +328,11 @@ const FinalStep = ({
                   : selectedServices.join(", ") || "—"}
               </p>
               <p>
-                <span className="text-gray-500">{t("plan")}:</span>
+                <span className="text-gray-500">{t("plan")}:</span>{" "}
                 {formValues.selectedPlan || "—"}
               </p>
               <p>
-                <span className="text-gray-500">
-                  {t("license") || "License"}:
-                </span>
+                <span className="text-gray-500">{t("license")}:</span>{" "}
                 {uploadedFile ? uploadedFile.name : "—"}
               </p>
             </div>
@@ -365,7 +359,7 @@ const FinalStep = ({
                 className="text-interactive_color hover:text-interactive_color mx-1 underline"
               >
                 {t("termsLink")}
-              </button>{" "}
+              </button>
             </label>
           </div>
           {errors.terms && (
