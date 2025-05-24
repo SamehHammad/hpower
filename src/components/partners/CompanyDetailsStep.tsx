@@ -54,20 +54,22 @@ const CompanyDetailsStep = ({
             label={t("company_name_label")}
             icon={FaBuilding}
             register={register}
-            name="companyName"
+            name="company"
             errors={errors}
             placeholder={t("company_name_placeholder")}
+            required={true} // Mark as mandatory
           />
 
           <FormField
             label={t("number_of_employees_label")}
             icon={FaUsers}
             register={register}
-            name="numberOfEmployees"
+            name="numberEmployees"
             errors={errors}
             type="select"
             options={employeeOptions}
             placeholder={t("number_of_employees_placeholder")}
+            required={true} // Mark as mandatory
           />
 
           <FormField
@@ -77,6 +79,7 @@ const CompanyDetailsStep = ({
             name="contactPerson"
             errors={errors}
             placeholder={t("contact_person_placeholder")}
+            required={true} // Mark as mandatory
           />
 
           <FormField
@@ -87,6 +90,7 @@ const CompanyDetailsStep = ({
             errors={errors}
             type="email"
             placeholder={t("contact_email_placeholder")}
+            required={true} // Mark as mandatory
           />
         </div>
       </motion.div>

@@ -22,7 +22,7 @@ interface FormValues {
   message: string;
   selectedPlan: string;
   terms: boolean;
-  companyLicense?: File | null;
+  companyLicense: File; // Changed from File | null to File
 }
 
 const PartnerForm = () => {
@@ -56,7 +56,7 @@ const PartnerForm = () => {
       message: "",
       selectedPlan: "",
       terms: false,
-      companyLicense: null,
+      companyLicense: null as unknown as File, // Initialize as null but type as File to satisfy TypeScript
     },
   });
 
@@ -68,15 +68,16 @@ const PartnerForm = () => {
     formValues.contactPerson &&
     formValues.contactEmail;
 
-  // Updated section2Valid to include phone number validation
+  // Updated section2Valid to make companyWebsite optional
   const section2Valid =
-    formValues.companyWebsite &&
     formValues.phoneNumber &&
     formValues.phoneNumber.length > 4 && // Ensure phone number is longer than country code (e.g., +971)
     selectedCities.length > 0 &&
     selectedServices.length > 0;
 
-  const section3Valid = formValues.selectedPlan && formValues.terms;
+  // Updated section3Valid to include companyLicense
+  const section3Valid =
+    formValues.selectedPlan && formValues.terms && formValues.companyLicense;
 
   const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
@@ -87,7 +88,7 @@ const PartnerForm = () => {
       formData.append("company_website", data.companyWebsite);
       formData.append("contact_person", data.contactPerson);
       formData.append("contact_email", data.contactEmail);
-      formData.append("phone", data.phoneNumber || "");
+      formData.append("phone_number", data.phoneNumber || "");
       formData.append("number_employees", data.numberOfEmployees);
       formData.append("cities", selectedCities.join(","));
       formData.append("services", selectedServices.join(","));
@@ -111,6 +112,7 @@ const PartnerForm = () => {
       );
 
       const backendResult = await backendResponse.json();
+      console.log("Backend response:", backendResult);
 
       if (!backendResponse.ok) {
         throw new Error(backendResult.message || "Backend submission failed");
@@ -122,8 +124,8 @@ const PartnerForm = () => {
           emailFormData.append(key, value.toString());
         }
       });
-      emailFormData.append("selectedCitie", selectedCities.join(","));
-      emailFormData.append("selectedService", selectedServices.join(","));
+      emailFormData.append("selectedCities", selectedCities.join(","));
+      emailFormData.append("selectedServices", selectedServices.join(","));
 
       const emailResult = await sendContactForm(emailFormData, locale);
       console.log("Email result:", emailResult);
@@ -185,14 +187,14 @@ const PartnerForm = () => {
         "contactEmail",
       ];
     } else if (formStep === 1) {
-      fieldsToValidate = ["companyWebsite", "phoneNumber"];
+      fieldsToValidate = ["phoneNumber"];
     } else if (formStep === 2) {
-      fieldsToValidate = ["selectedPlan", "terms"];
+      fieldsToValidate = ["selectedPlan", "terms", "companyLicense"];
     }
 
     const isStepValid = await trigger(fieldsToValidate);
 
-    const stepValidations = [section1Valid, section2Valid, section3Valid];
+    const stepValidations = true;
 
     if (isStepValid && stepValidations[formStep]) {
       setFormStep((current) => current + 1);
